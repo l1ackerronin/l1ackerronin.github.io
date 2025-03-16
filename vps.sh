@@ -5,4 +5,4 @@ sudo usermod -aG sudo nahid0x1
 curl -s https://install.zerotier.com | sudo bash
 sudo service zerotier-one start
 sudo systemctl enable zerotier-one
-zerotier-one join 41d49af6c2cb4b82
+zerotier-cli join 41d49af6c2cb4b82
