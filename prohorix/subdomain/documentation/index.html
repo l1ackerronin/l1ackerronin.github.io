@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subdomain Enum - API Documentation</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Rajdhani & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Rajdhani:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Custom CSS Variables for the glass effect and theme */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --blue-glow: 0 0 20px rgba(59, 130, 246, 0.4);
+            --terminal-bg: rgba(10, 15, 30, 0.8);
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #000428, #004e92);
+            background-attachment: fixed;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--blue-glow);
+        }
+        
+        .terminal {
+            font-family: 'Fira Code', monospace;
+            background: var(--terminal-bg);
+            color: #f8f8f2;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .terminal-header {
+            background: #282a36;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #44475a;
+        }
+        
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .terminal-body {
+            padding: 15px;
+            height: 350px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .terminal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .terminal-body::-webkit-scrollbar-track {
+            background: #282a36;
+        }
+        
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: #44475a;
+            border-radius: 4px;
+        }
+        
+        .prompt {
+            color: #50fa7b;
+        }
+        
+        .command {
+            color: #f8f8f2;
+        }
+        
+        .result {
+            color: #8be9fd;
+        }
+
+        .error {
+            color: #ff5555;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #f8f8f2;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .cyber-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+        }
+        
+        .btn-cyber {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cyber:hover {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+        }
+
+        .btn-cyber:disabled {
+            cursor: not-allowed;
+            background-color: #374151;
+        }
+        
+        .btn-cyber:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-cyber:hover:before {
+            left: 100%;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #1e3a8a;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+        
+        .comparison-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tool-logo {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            width: 95%;
+            max-width: 1000px; /* Increased width for better table view */
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 12px;
+        }
+
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #282a36;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #44475a;
+            border-radius: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .terminal-body {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-6xl font-bold mb-2 glow-text">Subdomain Enum</h1>
+            <p class="text-lg md:text-xl text-blue-300">API Documentation</p>
+        </header>
+        
+        <div class="max-w-4xl mx-auto glass rounded-xl p-6 mb-10">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-400">Discover Hidden Subdomains</h2>
+                    <p class="mb-4 text-gray-200">Uncover all subdomains associated with any domain using our powerful reconnaissance API. Perfect for Bug Bounty Hunters and penetration testers.</p>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span>Fast & Efficient Scanning</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span>Comprehensive Results</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span>Simple API Integration</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2">
+                    <div class="glass rounded-lg p-5">
+                        <h3 class="text-xl font-bold mb-3 text-blue-400">Try It Now</h3>
+                        <div class="mb-4">
+                            <label for="domain" class="block text-sm font-medium text-gray-200 mb-1">Enter Domain:</label>
+                            <input type="text" id="domain" value="facebook.com" class="w-full bg-gray-900 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button id="scan-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md btn-cyber">
+                            Scan Subdomains
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-blue-400">Terminal Access</h2>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-btn" style="background: #ff5f56;"></div>
+                    <div class="terminal-btn" style="background: #ffbd2e;"></div>
+                    <div class="terminal-btn" style="background: #27c93f;"></div>
+                    <div class="ml-4 text-sm text-gray-400">prohorix@localhost:~</div>
+                </div>
+                <div id="terminal-body" class="terminal-body"></div>
+            </div>
+        </div>
+    
+        <!-- Tool Comparison Section -->
+        <div class="max-w-4xl mx-auto mb-10">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-blue-400">Tool Comparison</h2>
+                <button id="compare-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md btn-cyber">
+                    Compare Tools
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- subtrak API Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-blue-600 text-white mr-3">SH</div><div><h3 class="text-xl font-bold">SubTrak API</h3><p class="text-blue-300 text-sm">ProhoriX</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-blue-300">95%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 95%"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-blue-300">98%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 98%"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-blue-300">100%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Simple REST API</p><p>✓ JSON Response Format</p><p>✓ No Installation Required</p><p>✓ Cloud-based Infrastructure</p></div>
+                </div>
+                <!-- Subfinder Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-green-600 text-white mr-3">SF</div><div><h3 class="text-xl font-bold">Subfinder</h3><p class="text-green-300 text-sm">ProjectDiscovery</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-green-300">85%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 85%; background: linear-gradient(90deg, #10b981, #34d399)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-green-300">90%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 90%; background: linear-gradient(90deg, #10b981, #34d399)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-green-300">70%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 70%; background: linear-gradient(90deg, #10b981, #34d399)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Multiple Data Sources</p><p>✓ Local Installation</p><p>✓ Command Line Interface</p><p>✗ Requires Configuration</p></div>
+                </div>
+                <!-- Assetfinder Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-purple-600 text-white mr-3">AF</div><div><h3 class="text-xl font-bold">Assetfinder</h3><p class="text-purple-300 text-sm">Tomnomnom</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-purple-300">80%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 80%; background: linear-gradient(90deg, #8b5cf6, #a78bfa)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-purple-300">85%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 85%; background: linear-gradient(90deg, #8b5cf6, #a78bfa)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-purple-300">60%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 60%; background: linear-gradient(90deg, #8b5cf6, #a78bfa)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Fast Execution</p><p>✓ Minimal Dependencies</p><p>✓ Command Line Interface</p><p>✗ Limited Data Sources</p></div>
+                </div>
+                <!-- Findomain Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-orange-500 text-white mr-3">FD</div><div><h3 class="text-xl font-bold">Findomain</h3><p class="text-orange-300 text-sm">Findomain Project</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-orange-300">90%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 90%; background: linear-gradient(90deg, #f97316, #fb923c)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-orange-300">88%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 88%; background: linear-gradient(90deg, #f97316, #fb923c)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-orange-300">65%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 65%; background: linear-gradient(90deg, #f97316, #fb923c)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Extremely Fast (Rust)</p><p>✓ Monitors new subdomains</p><p>✓ Command Line Interface</p><p>✗ Requires API keys for best results</p></div>
+                </div>
+                <!-- Sublist3r Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-yellow-500 text-black mr-3">S3</div><div><h3 class="text-xl font-bold">Sublist3r</h3><p class="text-yellow-300 text-sm">aboul3la</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-yellow-300">75%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 75%; background: linear-gradient(90deg, #eab308, #facc15)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-yellow-300">85%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 85%; background: linear-gradient(90deg, #eab308, #facc15)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-yellow-300">70%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 70%; background: linear-gradient(90deg, #eab308, #facc15)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Many Search Engines</p><p>✓ Python-based (extensible)</p><p>✓ Brute-force module</p><p>✗ Can be slow, dependencies</p></div>
+                </div>
+                <!-- Amass Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-red-600 text-white mr-3">AM</div><div><h3 class="text-xl font-bold">Amass</h3><p class="text-red-300 text-sm">OWASP</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-red-300">70%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 70%; background: linear-gradient(90deg, #dc2626, #ef4444)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-red-300">92%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 92%; background: linear-gradient(90deg, #dc2626, #ef4444)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-red-300">75%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 75%; background: linear-gradient(90deg, #dc2626, #ef4444)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Most Comprehensive</p><p>✓ Active & Passive methods</p><p>✓ Network Graphing</p><p>✗ Can be slow & complex</p></div>
+                </div>
+                <!-- Chaos Client Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-indigo-500 text-white mr-3">CC</div><div><h3 class="text-xl font-bold">Chaos Client</h3><p class="text-indigo-300 text-sm">ProjectDiscovery</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-indigo-300">92%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 92%; background: linear-gradient(90deg, #6366f1, #818cf8)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-indigo-300">80%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 80%; background: linear-gradient(90deg, #6366f1, #818cf8)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-indigo-300">80%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 80%; background: linear-gradient(90deg, #6366f1, #818cf8)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Uses Chaos Dataset</p><p>✓ Very Fast Lookups</p><p>✓ Easy to use client</p><p>✗ Relies on dataset freshness</p></div>
+                </div>
+                <!-- GAU Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-pink-500 text-white mr-3">GAU</div><div><h3 class="text-xl font-bold">GAU</h3><p class="text-pink-300 text-sm">Corben</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-pink-300">88%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 88%; background: linear-gradient(90deg, #ec4899, #f472b6)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-pink-300">78%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 78%; background: linear-gradient(90deg, #ec4899, #f472b6)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-pink-300">60%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 60%; background: linear-gradient(90deg, #ec4899, #f472b6)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Fetches Known URLs</p><p>✓ AlienVault, Wayback, etc.</p><p>✓ Finds more than just subs</p><p>✗ Not a pure subdomain tool</p></div>
+                </div>
+                <!-- Github-Subdomains Card -->
+                <div class="glass rounded-lg p-5 comparison-card">
+                    <div class="flex items-center mb-4"><div class="tool-logo bg-gray-400 text-black mr-3">GS</div><div><h3 class="text-xl font-bold">Github Subdomains</h3><p class="text-gray-300 text-sm">gwen001</p></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Speed</span><span class="text-sm text-gray-300">70%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 70%; background: linear-gradient(90deg, #9ca3af, #d1d5db)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">Accuracy</span><span class="text-sm text-gray-300">75%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 75%; background: linear-gradient(90deg, #9ca3af, #d1d5db)"></div></div></div>
+                    <div class="mb-4"><div class="flex justify-between mb-1"><span class="text-sm">API Integration</span><span class="text-sm text-gray-300">60%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 60%; background: linear-gradient(90deg, #9ca3af, #d1d5db)"></div></div></div>
+                    <div class="text-sm text-gray-300"><p>✓ Scrapes Github</p><p>✓ Unique discovery method</p><p>✓ Python Script</p><p>✗ Rate-limited by Github API</p></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto glass rounded-xl p-6 mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-blue-400">API Documentation</h2>
+            <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+                <code class="text-sm text-gray-200">
+                    curl -s "https://pos.rokomribazarshop.com/api/subdomain/?enum=<span class="text-blue-400">YOUR_DOMAIN</span>&key=<span class="text-green-400">YOUR_API_KEY</span>" | jq -r '.subdomains[]'
+                </code>
+            </div>
+            <p class="text-gray-200 mb-4">Replace <span class="font-mono text-blue-400">YOUR_DOMAIN</span> with the target domain you want to scan for subdomains.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-2 text-blue-400">Parameters</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start"><span class="font-mono bg-gray-800 px-2 py-1 rounded text-blue-400 mr-2">enum</span><span>Target domain to enumerate</span></li>
+                        <li class="flex items-start"><span class="font-mono bg-gray-800 px-2 py-1 rounded text-blue-400 mr-2">key</span><span>Your API authentication key</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-2 text-blue-400">Response Format</h3>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <pre class="text-sm text-gray-200">{
+    "domain": "hackerone.com",
+    "total_found": 1504,
+    "unique_subdomains_count": 92,
+    "subdomains": [
+        ".hackerone.com",
+        "118.hackerone.com",
+        "119.hackerone.com",
+        "18.hackerone.com",
+        ...
+    ]
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Comparison Modal -->
+        <div id="comparison-modal" class="modal">
+            <div class="modal-content glass p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-blue-400">Detailed Tool Comparison</h2>
+                    <button id="close-modal" class="text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-12">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-center text-blue-400">Performance Graph (Speed vs. Accuracy)</h3>
+                        <div class="bg-gray-900/50 p-4 rounded-lg">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-blue-400">Feature Comparison</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-gray-900/50 rounded-lg overflow-hidden">
+                                <thead>
+                                    <tr class="bg-gray-800">
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Feature</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">SubTrack</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Subfinder</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Assetfinder</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Findomain</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Sublist3r</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Amass</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Chaos</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">GAU</th>
+                                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">Github Sub.</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-800">
+                                    <tr class="bg-gray-900/70">
+                                        <td class="px-3 py-3 text-sm text-gray-200">API Access</td>
+                                        <td class="px-2 py-3 text-center text-sm text-blue-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-indigo-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-3 text-sm text-gray-200">Cloud-based</td>
+                                        <td class="px-2 py-3 text-center text-sm text-blue-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-indigo-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                    </tr>
+                                    <tr class="bg-gray-900/70">
+                                        <td class="px-3 py-3 text-sm text-gray-200">Multiple Sources</td>
+                                        <td class="px-2 py-3 text-center text-sm text-blue-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-green-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-orange-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-yellow-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-red-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-pink-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-3 text-sm text-gray-200">Active & Passive Recon</td>
+                                        <td class="px-2 py-3 text-center text-sm text-blue-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-green-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-yellow-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-red-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                    </tr>
+                                     <tr class="bg-gray-900/70">
+                                        <td class="px-3 py-3 text-sm text-gray-200">Web Interface</td>
+                                        <td class="px-2 py-3 text-center text-sm text-blue-400">✓</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                        <td class="px-2 py-3 text-center text-sm text-gray-500">✗</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-blue-400">Real-world Comparison</h3>
+                        <div class="bg-gray-900/50 rounded-lg p-4 mb-4">
+                            <h4 class="font-bold mb-3 text-gray-200">Target: <span class="text-blue-300">facebook.com</span></h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                <div><p class="font-bold text-green-400 mb-1">Subfinder</p><p class="text-sm text-gray-300">Found: ~1042</p><p class="text-sm text-gray-300">Time: 7s</p></div>
+                                <div><p class="font-bold text-purple-400 mb-1">Assetfinder</p><p class="text-sm text-gray-300">Found: ~1596</p><p class="text-sm text-gray-300">Time: 6s</p></div>
+                                <div><p class="font-bold text-orange-400 mb-1">Findomain</p><p class="text-sm text-gray-300">Found: ~246</p><p class="text-sm text-gray-300">Time: 5s</p></div>
+                                <div><p class="font-bold text-yellow-400 mb-1">Sublist3r</p><p class="text-sm text-gray-300">Found: ~379</p><p class="text-sm text-gray-300">Time: 12s</p></div>
+                                <div><p class="font-bold text-red-400 mb-1">Amass</p><p class="text-sm text-gray-300">Found: ~487</p><p class="text-sm text-gray-300">Time: 25s</p></div>
+                                <div><p class="font-bold text-indigo-400 mb-1">Chaos</p><p class="text-sm text-gray-300">Found: ~32870</p><p class="text-sm text-gray-300">Time: 3s</p></div>
+                                <div><p class="font-bold text-pink-400 mb-1">GAU</p><p class="text-sm text-gray-300">Found: ~517</p><p class="text-sm text-gray-300">Time: 9s</p></div>
+                                <div><p class="font-bold text-gray-400 mb-1">Github Sub.</p><p class="text-sm text-gray-300">Found: ~0</p><p class="text-sm text-gray-300">Time: 15s</p></div>
+                                <div><p class="font-bold text-blue-400 mb-1">SubTrak</p><p class="text-sm text-gray-300">Found: ~33181</p><p class="text-sm text-gray-300">Time: 4s</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold mb-2 text-blue-400">Why Choose Subtrak API?</h4>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex items-start"><svg class="w-5 h-5 text-blue-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg><span>No local installation or dependencies required. Just a simple API call.</span></li>
+                            <li class="flex items-start"><svg class="w-5 h-5 text-blue-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg><span>Combines power of multiple tools with cloud infrastructure for faster results.</span></li>
+                            <li class="flex items-start"><svg class="w-5 h-5 text-blue-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg><span>Simple integration with any programming language or even from the command line.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-6 border-t border-gray-800/50">
+        <div class="container mx-auto px-4 text-center text-gray-400">
+            <p>© 2025 ProhoriX. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const domainInput = document.getElementById('domain');
+            const scanBtn = document.getElementById('scan-btn');
+            const terminalBody = document.getElementById('terminal-body');
+            const compareBtn = document.getElementById('compare-btn');
+            const comparisonModal = document.getElementById('comparison-modal');
+            const closeModal = document.getElementById('close-modal');
+            const terminalUser = 'prohorix@localhost:~$ ';
+
+            const API_KEY = 'RbC1ty9Kp7MGxHZ6q4LUo3WjDAfNnvsX';
+            let performanceChart = null;
+
+            // Function to draw the initial terminal view on page load
+            const initTerminal = () => {
+                terminalBody.innerHTML = '';
+                const promptSpan = document.createElement('span');
+                promptSpan.className = 'prompt';
+                promptSpan.textContent = terminalUser;
+                const cursorSpan = document.createElement('span');
+                cursorSpan.className = 'cursor';
+                terminalBody.appendChild(promptSpan);
+                terminalBody.appendChild(cursorSpan);
+            };
+
+            const scanSubdomains = async () => {
+                const domain = domainInput.value.trim();
+                if (!domain) {
+                    alert('Please enter a domain to scan.');
+                    return;
+                }
+
+                terminalBody.innerHTML = '';
+                scanBtn.disabled = true;
+                scanBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Scanning...`;
+
+                const promptSpan = document.createElement('span');
+                promptSpan.className = 'prompt';
+                promptSpan.textContent = terminalUser;
+                const commandSpan = document.createElement('span');
+                commandSpan.className = 'command';
+                commandSpan.textContent = `curl -s "https://pos.rokomribazarshop.com/api/subdomain/?enum=${domain}&key=${API_KEY}"`;
+                terminalBody.appendChild(promptSpan);
+                terminalBody.appendChild(commandSpan);
+                terminalBody.appendChild(document.createElement('br'));
+
+                const targetUrl = `https://pos.rokomribazarshop.com/api/subdomain/?enum=${domain}&key=${API_KEY}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                
+                try {
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error(`Proxy request failed with status ${response.status}`);
+                    
+                    const data = await response.json();
+
+                    if (data && data.subdomains && data.subdomains.length > 0) {
+                        const resultSpan = document.createElement('span');
+                        resultSpan.className = 'result';
+                        resultSpan.textContent = data.subdomains.join('\n');
+                        terminalBody.appendChild(resultSpan);
+                        terminalBody.appendChild(document.createElement('br'));
+                        
+                        const wcPrompt = document.createElement('span');
+                        wcPrompt.className = 'prompt';
+                        wcPrompt.textContent = terminalUser;
+                        terminalBody.appendChild(wcPrompt);
+
+                        const wcCommand = document.createElement('span');
+                        wcCommand.className = 'command';
+                        wcCommand.textContent = `echo ${data.unique_subdomains_count} subdomains found for ${data.domain}`;
+                        terminalBody.appendChild(wcCommand);
+
+                    } else {
+                        const noResultSpan = document.createElement('span');
+                        noResultSpan.className = 'error';
+                        noResultSpan.textContent = (data && data.message) ? data.message : `No subdomains found for ${domain}.`;
+                        terminalBody.appendChild(noResultSpan);
+                    }
+                } catch (error) {
+                    console.error('Scan Error:', error);
+                    const errorSpan = document.createElement('span');
+                    errorSpan.className = 'error';
+                    errorSpan.textContent = `Error: API request failed. Please try again later.`;
+                    terminalBody.appendChild(errorSpan);
+                } finally {
+                    terminalBody.appendChild(document.createElement('br'));
+                    const newPrompt = document.createElement('span');
+                    newPrompt.className = 'prompt';
+                    newPrompt.textContent = terminalUser;
+                    const cursor = document.createElement('span');
+                    cursor.className = 'cursor';
+                    terminalBody.appendChild(newPrompt);
+                    terminalBody.appendChild(cursor);
+
+                    scanBtn.disabled = false;
+                    scanBtn.textContent = 'Scan Subdomains';
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                }
+            };
+            
+            // Function to create the comparison chart
+            const createComparisonChart = () => {
+                if (performanceChart) {
+                    performanceChart.destroy();
+                }
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                
+                const chartData = {
+                    labels: ['SubTrak', 'Subfinder', 'Assetfinder', 'Findomain', 'Sublist3r', 'Amass', 'Chaos', 'GAU', 'Github Sub.'],
+                    datasets: [
+                        {
+                            label: 'Speed',
+                            data: [95, 85, 80, 90, 75, 70, 92, 88, 70],
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Accuracy',
+                            data: [98, 90, 85, 88, 85, 92, 80, 78, 75], // UPDATED
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                };
+
+                performanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: 'white'
+                                }
+                            },
+                             tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y + '%';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'white',
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'white'
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Event Listeners
+            scanBtn.addEventListener('click', scanSubdomains);
+            
+            compareBtn.addEventListener('click', () => {
+                comparisonModal.classList.add('active');
+                // Use a small timeout to allow the modal to become visible before rendering the chart
+                setTimeout(createComparisonChart, 50);
+            });
+            
+            closeModal.addEventListener('click', () => comparisonModal.classList.remove('active'));
+            
+            comparisonModal.addEventListener('click', (e) => {
+                if (e.target === comparisonModal) {
+                    comparisonModal.classList.remove('active');
+                }
+            });
+
+            // Initial setup on page load
+            initTerminal();
+        });
+    </script>
+</body>
+</html>
